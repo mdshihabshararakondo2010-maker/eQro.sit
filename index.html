@@ -13,17 +13,18 @@ nav button{background:none;border:none;color:white;padding:12px 25px;cursor:poin
 nav button:hover{background:#43a047;border-radius:5px;}
 .page{display:none;padding:20px;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
-.card{background:white;padding:15px;border-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,0.15);transition:0.3s;position:relative;}
+.card{background:white;padding:15px;border-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,0.15);transition:0.3s;display:flex;flex-direction:column;position:relative;}
 .card:hover{transform:translateY(-5px);box-shadow:0 6px 20px rgba(0,0,0,0.25);}
 .card iframe,.card video,.card img{width:100%;border-radius:5px;height:200px;object-fit:cover;}
 .card h3{margin:10px 0 5px 0;font-size:18px;}
 .card p{margin:5px 0;font-size:14px;}
 .card .info{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
-.card button.messenger{position:absolute;top:10px;right:10px;background:#0084ff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.card button.messenger{position:absolute;top:10px;right:10px;background:#0084ff;width:28px;height:28px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;border:none;}
 .card button.messenger img{width:14px;}
-.card .actions{margin-top:8px;display:flex;justify-content:space-between;}
-button.uploadBtn{background:#43a047;color:white;border:none;padding:10px;width:100%;margin-top:5px;cursor:pointer;}
-input,select{width:100%;padding:8px;margin:5px 0;border-radius:4px;border:1px solid #ccc;}
+.card button.deleteBtn{background:#e53935;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-left:5px;}
+input,select,button.uploadBtn{margin:5px 0;padding:8px;width:100%;border-radius:4px;border:1px solid #ccc;cursor:pointer;}
+button.uploadBtn{background:#43a047;color:white;border:none;}
+.filterSelect{width:200px;margin-bottom:20px;}
 </style>
 </head>
 <body>
@@ -34,23 +35,39 @@ input,select{width:100%;padding:8px;margin:5px 0;border-radius:4px;border:1px so
 <button onclick="showPage('pdf')">Q PDF Hub</button>
 <button onclick="showPage('video')">EduVid</button>
 <button onclick="showPage('shop')">Q Shop</button>
-<button onclick="adminLogin()">Admin</button>
+<button onclick="adminLogin()">Admin Upload</button>
 </nav>
 
-<div id="pdf" class="page"><h2>Q PDF Hub</h2><div id="pdfList" class="grid"></div></div>
-<div id="video" class="page"><h2>EduVid</h2><div id="videoList" class="grid"></div></div>
-<div id="shop" class="page"><h2>Q Shop</h2><div id="productList" class="grid"></div></div>
+<div id="pdf" class="page">
+<h2>Q PDF Hub</h2>
+<select class="filterSelect" id="pdfFilter" onchange="filterCards('pdf')">
+<option value="">All Categories</option>
+<option>Academic</option><option>Job</option><option>Admission</option><option>Others</option>
+</select>
+<div id="pdfList" class="grid"></div>
+</div>
+
+<div id="video" class="page">
+<h2>EduVid</h2>
+<select class="filterSelect" id="videoFilter" onchange="filterCards('video')">
+<option value="">All Categories</option>
+</select>
+<div id="videoList" class="grid"></div>
+</div>
+
+<div id="shop" class="page">
+<h2>Q Shop</h2>
+<div id="productList" class="grid"></div>
+</div>
+
 <div id="upload" class="page">
 <h2>Upload Files</h2>
 
 <h3>Upload PDF</h3>
 <input type="file" id="pdfFile">
 <input type="text" id="pdfName" placeholder="PDF Name">
-<select id="pdfCategory">
-<option>Academic</option>
-<option>Job</option>
-<option>Admission</option>
-<option>Others</option>
+<select id="pdfCategoryUpload">
+<option>Academic</option><option>Job</option><option>Admission</option><option>Others</option>
 </select>
 <button class="uploadBtn" onclick="uploadPDF()">Upload PDF</button>
 
@@ -69,134 +86,143 @@ input,select{width:100%;padding:8px;margin:5px 0;border-radius:4px;border:1px so
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0/dist/supabase.min.js"></script>
 <script>
-const SUPABASE_URL="https://uvzfyslttbqchrhetqdk.supabase.co";
-const SUPABASE_KEY="sb_secret_BGa-xVbatzr30t5MK9s_Mg_lWJeRI72"; // secret key
-const supabase=supabaseJs.createClient(SUPABASE_URL,SUPABASE_KEY);
+// Supabase connect
+const SUPABASE_URL = "https://uvzfyslttbqchrhetqdk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_4x7wUqvQRxbIXysVhyBkJg_rHSYpJNo"; 
+const supabase = supabaseJs.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 var messengerID="EQro Sit";
+var adminLoggedIn=false;
 
-function showPage(page){document.querySelectorAll(".page").forEach(p=>p.style.display="none");document.getElementById(page).style.display="block";}
+// Page switch
+function showPage(page){
+  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
+  document.getElementById(page).style.display="block";
+}
 
 // Admin login
 function adminLogin(){
-  let pass=prompt("Enter Admin Password");
-  if(pass==="s6h7i8h9a0b"){showPage("upload");} 
-  else{alert("Wrong Password");}
+  const pass = prompt("Enter Admin Password");
+  if(pass==="s6h7i8h9a0b"){ 
+    showPage('upload'); 
+    adminLoggedIn=true;
+  }
+  else alert("Wrong Password");
 }
 
-// Single messenger icon card
-function addPDFCard(name,url,date){
-  const html=`<div class="card">
+// Add Cards
+function addPDFCard(name,url,category,date,id){
+  let deleteBtn = adminLoggedIn ? `<button class="deleteBtn" onclick="deleteItem('pdfs','${id}', this)">Delete</button>` : '';
+  const html=`<div class="card" data-category="${category}" data-id="${id}">
+    <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
+    </button>
     <h3>${name}</h3>
     <iframe src="${url}"></iframe>
-    <div class="info">
-      <span class="date">${date}</span>
-      <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
-      </button>
-    </div>
-    <div class="actions">
-      <button onclick="window.open('${url}','_blank')">Download</button>
-      <button onclick="deleteItem('pdfs','${name}')">Delete</button>
-    </div>
+    <div class="info"><span>${category}</span>${deleteBtn}</div>
   </div>`;
   document.getElementById("pdfList").innerHTML+=html;
 }
 
-function addVideoCard(name,url,date){
-  const html=`<div class="card">
+function addVideoCard(name,url,category,date,id){
+  let deleteBtn = adminLoggedIn ? `<button class="deleteBtn" onclick="deleteItem('videos','${id}', this)">Delete</button>` : '';
+  const html=`<div class="card" data-category="${category}" data-id="${id}">
+    <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
+    </button>
     <h3>${name}</h3>
     <video controls src="${url}"></video>
-    <div class="info">
-      <span class="date">${date}</span>
-      <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
-      </button>
-    </div>
-    <div class="actions">
-      <button onclick="window.open('${url}','_blank')">Download</button>
-      <button onclick="deleteItem('videos','${name}')">Delete</button>
-    </div>
+    <div class="info"><span>${category||'Video'}</span>${deleteBtn}</div>
   </div>`;
   document.getElementById("videoList").innerHTML+=html;
 }
 
-function addProductCard(name,price,url,date){
-  const html=`<div class="card">
-    <img src="${url}">
+function addProductCard(name,price,url,date,id){
+  let deleteBtn = adminLoggedIn ? `<button class="deleteBtn" onclick="deleteItem('products','${id}', this)">Delete</button>` : '';
+  const html=`<div class="card" data-id="${id}">
+    <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
+    </button>
+    <img src="${url}" alt="${name}">
     <h3>${name}</h3>
     <p>Price: ${price}</p>
-    <div class="info">
-      <span class="date">${date}</span>
-      <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
-      </button>
-    </div>
-    <div class="actions">
-      <button onclick="deleteItem('products','${name}')">Delete</button>
-    </div>
+    <div class="info">${deleteBtn}</div>
   </div>`;
   document.getElementById("productList").innerHTML+=html;
 }
 
-// Delete function
-async function deleteItem(table,name){
-  if(confirm("Delete "+name+"?")){
-    await supabase.from(table).delete().eq('name',name);
-    alert(name+" deleted! Refresh page.");
-  }
+// Delete
+async function deleteItem(table,id,btn){
+  if(!confirm("Delete this item?")) return;
+  await supabase.from(table).delete().eq('id',id);
+  btn.closest('.card').remove();
 }
 
-// Upload functions
+// Filter
+function filterCards(type){
+  const filter=document.getElementById(type+'Filter').value.toLowerCase();
+  const cards=document.querySelectorAll('#'+type+'List .card');
+  cards.forEach(c=>c.style.display = filter=='' || c.dataset.category.toLowerCase()==filter ? 'flex' : 'none');
+}
+
+// Upload
 async function uploadPDF(){
   const file=document.getElementById("pdfFile").files[0];
-  if(!file){alert("Select PDF"); return;}
+  if(!file){alert("Select a PDF");return;}
   const name=document.getElementById("pdfName").value||file.name;
+  const category=document.getElementById("pdfCategoryUpload").value;
   const path=`pdfs/${Date.now()}_${file.name}`;
-  await supabase.storage.from('eQro.sit').upload(path,file);
+  const {error}=await supabase.storage.from('eQro.sit').upload(path,file);
+  if(error){alert("Upload failed: "+error.message);return;}
   const url=supabase.storage.from('eQro.sit').getPublicUrl(path).data.publicUrl;
   const date=new Date().toLocaleDateString();
-  await supabase.from('pdfs').insert([{name,url,date}]);
-  addPDFCard(name,url,date);
+  const {data}=await supabase.from('pdfs').insert([{name,category,url,date}]).select();
+  addPDFCard(name,url,category,date,data[0].id);
+  document.getElementById("pdfFile").value="";document.getElementById("pdfName").value="";
 }
 
 async function uploadVideo(){
   const file=document.getElementById("videoFile").files[0];
-  if(!file){alert("Select Video"); return;}
+  if(!file){alert("Select a Video");return;}
   const name=document.getElementById("videoName").value||file.name;
   const path=`videos/${Date.now()}_${file.name}`;
-  await supabase.storage.from('eQro.sit').upload(path,file);
+  const {error}=await supabase.storage.from('eQro.sit').upload(path,file);
+  if(error){alert("Upload failed: "+error.message);return;}
   const url=supabase.storage.from('eQro.sit').getPublicUrl(path).data.publicUrl;
   const date=new Date().toLocaleDateString();
-  await supabase.from('videos').insert([{name,url,date}]);
-  addVideoCard(name,url,date);
+  const {data}=await supabase.from('videos').insert([{name,url,date}]).select();
+  addVideoCard(name,url,'Video',date,data[0].id);
+  document.getElementById("videoFile").value="";document.getElementById("videoName").value="";
 }
 
 async function uploadProduct(){
   const file=document.getElementById("productFile").files[0];
   const name=document.getElementById("productName").value;
   const price=document.getElementById("productPrice").value;
-  if(!file||!name||!price){alert("Fill all fields"); return;}
+  if(!file||!name||!price){alert("Fill all fields");return;}
   const path=`products/${Date.now()}_${file.name}`;
-  await supabase.storage.from('eQro.sit').upload(path,file);
+  const {error}=await supabase.storage.from('eQro.sit').upload(path,file);
+  if(error){alert("Upload failed: "+error.message);return;}
   const url=supabase.storage.from('eQro.sit').getPublicUrl(path).data.publicUrl;
   const date=new Date().toLocaleDateString();
-  await supabase.from('products').insert([{name,price,url,date}]);
-  addProductCard(name,price,url,date);
+  const {data}=await supabase.from('products').insert([{name,price,url,date}]).select();
+  addProductCard(name,price,url,date,data[0].id);
+  document.getElementById("productFile").value="";document.getElementById("productName").value="";document.getElementById("productPrice").value="";
 }
 
-// Load cards
+// Load all data
 async function loadCards(){
   let {data: pdfs}=await supabase.from('pdfs').select('*');
-  pdfs?.forEach(p=>addPDFCard(p.name,p.url,p.date));
+  pdfs?.forEach(p=>addPDFCard(p.name,p.url,p.category,p.date,p.id));
   let {data: videos}=await supabase.from('videos').select('*');
-  videos?.forEach(v=>addVideoCard(v.name,v.url,v.date));
+  videos?.forEach(v=>addVideoCard(v.name,v.url,'Video',v.date,v.id));
   let {data: products}=await supabase.from('products').select('*');
-  products?.forEach(pr=>addProductCard(pr.name,pr.price,pr.url,pr.date));
+  products?.forEach(pr=>addProductCard(pr.name,pr.price,pr.url,pr.date,pr.id));
 }
 
 loadCards();
 showPage('pdf');
 </script>
+
 </body>
 </html>
