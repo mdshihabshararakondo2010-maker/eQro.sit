@@ -64,13 +64,14 @@ input,select{width:100%;padding:8px;margin:5px 0;border-radius:4px;border:1px so
 <input type="text" id="productName" placeholder="Product Name">
 <input type="text" id="productPrice" placeholder="Price">
 <button class="uploadBtn" onclick="uploadProduct()">Upload Product</button>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0/dist/supabase.min.js"></script>
 <script>
-const SUPABASE_URL = "https://uvzfyslttbqchrhetqdk.supabase.co";
-const SUPABASE_KEY = "sb_secret_BGa-xVbatzr30t5MK9s_Mg_lWJeRI72"; // secret key
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL="https://uvzfyslttbqchrhetqdk.supabase.co";
+const SUPABASE_KEY="sb_secret_BGa-xVbatzr30t5MK9s_Mg_lWJeRI72"; // secret key
+const supabase=supabaseJs.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 var messengerID="EQro Sit";
 
@@ -91,11 +92,11 @@ function addPDFCard(name,url,date){
     <div class="info">
       <span class="date">${date}</span>
       <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png" alt="Messenger">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
       </button>
     </div>
     <div class="actions">
-      <button onclick="downloadItem('${url}')">Download</button>
+      <button onclick="window.open('${url}','_blank')">Download</button>
       <button onclick="deleteItem('pdfs','${name}')">Delete</button>
     </div>
   </div>`;
@@ -109,11 +110,11 @@ function addVideoCard(name,url,date){
     <div class="info">
       <span class="date">${date}</span>
       <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png" alt="Messenger">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
       </button>
     </div>
     <div class="actions">
-      <button onclick="downloadItem('${url}')">Download</button>
+      <button onclick="window.open('${url}','_blank')">Download</button>
       <button onclick="deleteItem('videos','${name}')">Delete</button>
     </div>
   </div>`;
@@ -122,12 +123,13 @@ function addVideoCard(name,url,date){
 
 function addProductCard(name,price,url,date){
   const html=`<div class="card">
-    <img src="${url}" alt="${name}">
-    <h3>${name}</h3><p>Price: ${price}</p>
+    <img src="${url}">
+    <h3>${name}</h3>
+    <p>Price: ${price}</p>
     <div class="info">
       <span class="date">${date}</span>
       <button class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png" alt="Messenger">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
       </button>
     </div>
     <div class="actions">
@@ -137,14 +139,11 @@ function addProductCard(name,price,url,date){
   document.getElementById("productList").innerHTML+=html;
 }
 
-// Download
-function downloadItem(url){window.open(url,'_blank');}
-
-// Delete
+// Delete function
 async function deleteItem(table,name){
-  if(confirm("Are you sure to delete "+name+"?")){
+  if(confirm("Delete "+name+"?")){
     await supabase.from(table).delete().eq('name',name);
-    alert(name+" deleted! Refresh page to update.");
+    alert(name+" deleted! Refresh page.");
   }
 }
 
@@ -188,17 +187,16 @@ async function uploadProduct(){
 
 // Load cards
 async function loadCards(){
-  let {data:pdfs}=await supabase.from('pdfs').select('*');
+  let {data: pdfs}=await supabase.from('pdfs').select('*');
   pdfs?.forEach(p=>addPDFCard(p.name,p.url,p.date));
-  let {data:videos}=await supabase.from('videos').select('*');
+  let {data: videos}=await supabase.from('videos').select('*');
   videos?.forEach(v=>addVideoCard(v.name,v.url,v.date));
-  let {data:products}=await supabase.from('products').select('*');
+  let {data: products}=await supabase.from('products').select('*');
   products?.forEach(pr=>addProductCard(pr.name,pr.price,pr.url,pr.date));
 }
 
 loadCards();
 showPage('pdf');
 </script>
-
 </body>
 </html>
