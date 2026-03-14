@@ -23,6 +23,7 @@ nav button:hover{background:#43a047;border-radius:5px;}
 .like{background:#ffeb3b;}
 .messenger{position:absolute;top:10px;right:10px;background:#0084ff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .messenger img{width:14px;}
+.delete{background:#e53935;color:white;padding:6px;border:none;border-radius:4px;cursor:pointer;}
 .uploadBtn{background:#43a047;color:white;border:none;padding:10px;width:100%;margin-top:5px;cursor:pointer;}
 input,select{width:100%;padding:8px;margin:5px 0;}
 </style>
@@ -72,8 +73,11 @@ const SUPABASE_URL="https://uvzfyslttbqchrhetqdk.supabase.co";
 const SUPABASE_KEY="sb_publishable_4x7wUqvQRxbIXysVhyBkJg_rHSYpJNo";
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// Messenger ID space-safe
+// Messenger ID
 var messengerID="EQro%20Sit";
+
+// Admin status
+var admin=false;
 
 // Page switch
 function showPage(page){
@@ -84,31 +88,35 @@ function showPage(page){
 // Admin login
 function adminLogin(){
   let pass=prompt("Enter Admin Password");
-  if(pass==="eqro123"){showPage("upload");}
+  if(pass==="s6h7i8h9a0b"){admin=true; showPage("upload"); alert("Welcome Admin");}
   else{alert("Wrong Password");}
 }
 
-// Card functions
-function addPDFCard(name,url){
+// Like button
+function like(btn){btn.innerHTML="⭐ Liked";}
+
+// Messenger button
+function messenger(){window.open("https://m.me/EQroSit");}
+
+// Add Cards
+function addPDFCard(name,url,category,id){
+  let delBtn=admin?`<button class="delete" onclick="deletePDF('${id}')">Delete</button>`:"";
   const html=`<div class="card">
-    <div class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
-    </div>
+    <div class="messenger" onclick="messenger()"><img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png"></div>
     <h3>${name}</h3>
     <iframe src="${url}"></iframe>
     <div class="actions">
       <button class="download" onclick="window.open('${url}')">Download</button>
       <button class="like" onclick="like(this)">⭐ Like</button>
+      ${delBtn}
     </div>
   </div>`;
   document.getElementById("pdfList").innerHTML+=html;
 }
 
-function addVideoCard(name,url){
+function addVideoCard(name,url,id){
   const html=`<div class="card">
-    <div class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
-    </div>
+    <div class="messenger" onclick="messenger()"><img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png"></div>
     <h3>${name}</h3>
     <video controls src="${url}"></video>
     <div class="actions">
@@ -119,21 +127,15 @@ function addVideoCard(name,url){
   document.getElementById("videoList").innerHTML+=html;
 }
 
-function addProductCard(name,price,url){
+function addProductCard(name,price,url,id){
   const html=`<div class="card">
-    <div class="messenger" onclick="window.open('https://m.me/${messengerID}','_blank')">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png">
-    </div>
+    <div class="messenger" onclick="messenger()"><img src="https://img.icons8.com/ios-filled/50/ffffff/facebook-messenger.png"></div>
     <img src="${url}">
     <h3>${name}</h3><p>Price: ${price}</p>
-    <div class="actions">
-      <button class="like" onclick="like(this)">⭐ Like</button>
-    </div>
+    <div class="actions"><button class="like" onclick="like(this)">⭐ Like</button></div>
   </div>`;
   document.getElementById("productList").innerHTML+=html;
 }
-
-function like(btn){btn.innerHTML="⭐ Liked";}
 
 // Search
 function searchItem(text){
@@ -143,16 +145,17 @@ function searchItem(text){
   });
 }
 
-// Upload functions (bucket: eQro.sit)
+// Upload functions
 async function uploadPDF(){
   const file=document.getElementById("pdfFile").files[0];
-  if(!file){alert("Select PDF");return;}
+  if(!file){alert("Select PDF"); return;}
   const name=document.getElementById("pdfName").value||file.name;
+  const category=document.getElementById("pdfCategory").value;
   const path="pdfs/"+Date.now()+"_"+file.name;
   await supabaseClient.storage.from("eQro.sit").upload(path,file);
   const url=supabaseClient.storage.from("eQro.sit").getPublicUrl(path).data.publicUrl;
-  await supabaseClient.from("pdfs").insert([{name,url}]);
-  addPDFCard(name,url);
+  const {data}=await supabaseClient.from("pdfs").insert([{name,url,category}]).select();
+  addPDFCard(name,url,category,data[0].id);
   document.getElementById("pdfFile").value="";document.getElementById("pdfName").value="";
 }
 
@@ -163,8 +166,8 @@ async function uploadVideo(){
   const path="videos/"+Date.now()+"_"+file.name;
   await supabaseClient.storage.from("eQro.sit").upload(path,file);
   const url=supabaseClient.storage.from("eQro.sit").getPublicUrl(path).data.publicUrl;
-  await supabaseClient.from("videos").insert([{name,url}]);
-  addVideoCard(name,url);
+  const {data}=await supabaseClient.from("videos").insert([{name,url}]).select();
+  addVideoCard(name,url,data[0].id);
   document.getElementById("videoFile").value="";document.getElementById("videoName").value="";
 }
 
@@ -176,19 +179,27 @@ async function uploadProduct(){
   const path="products/"+Date.now()+"_"+file.name;
   await supabaseClient.storage.from("eQro.sit").upload(path,file);
   const url=supabaseClient.storage.from("eQro.sit").getPublicUrl(path).data.publicUrl;
-  await supabaseClient.from("products").insert([{name,price,url}]);
-  addProductCard(name,price,url);
+  const {data}=await supabaseClient.from("products").insert([{name,price,url}]).select();
+  addProductCard(name,price,url,data[0].id);
   document.getElementById("productFile").value="";document.getElementById("productName").value="";document.getElementById("productPrice").value="";
 }
 
-// Load all cards
+// Delete PDF
+async function deletePDF(id){
+  if(!confirm("Delete this PDF?")) return;
+  await supabaseClient.from("pdfs").delete().eq("id",id);
+  document.getElementById("pdfList").innerHTML="";
+  loadData();
+}
+
+// Load all data
 async function loadData(){
   let {data:pdfs}=await supabaseClient.from("pdfs").select("*");
-  pdfs?.forEach(p=>addPDFCard(p.name,p.url));
+  pdfs?.forEach(p=>addPDFCard(p.name,p.url,p.category,p.id));
   let {data:videos}=await supabaseClient.from("videos").select("*");
-  videos?.forEach(v=>addVideoCard(v.name,v.url));
+  videos?.forEach(v=>addVideoCard(v.name,v.url,v.id));
   let {data:products}=await supabaseClient.from("products").select("*");
-  products?.forEach(pr=>addProductCard(pr.name,pr.price,pr.url));
+  products?.forEach(pr=>addProductCard(pr.name,pr.price,pr.url,pr.id));
 }
 
 loadData();
