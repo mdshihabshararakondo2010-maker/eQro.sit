@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eQro PDF Hub - শিক্ষামূলক PDF হাব</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2e7d32;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #43a047, #66bb6a);
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(67, 160, 71, 0.4);
+        }
+        
+        .header-icons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .icon-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #43a047, #66bb6a);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(67, 160, 71, 0.3);
+        }
+        
+        .icon-btn:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 10px 30px rgba(67, 160, 71, 0.5);
+        }
+        
+        .nav {
+            background: rgba(46, 125, 50, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-btn:hover, .nav-btn.active {
+            background: white;
+            color: #2e7d32;
+            border-color: #43a047;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.3);
+        }
+        
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 80px 60px;
+            text-align: center;
+            margin-bottom: 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            color: #2e7d32;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 50px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-btn {
+            background: linear-gradient(45deg, #43a047, #66bb6a);
+            color: white;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(67, 160, 71, 0.4);
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(67, 160, 71, 0.6);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #43a047, #66bb6a, #81c784);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+        
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .card:hover {
+            transform: translateY(-20px) scale(1.03);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-icon {
+            font-size: 80px;
+            color: #43a047;
+            margin-bottom: 30px;
+            display: block;
+            text-align: center;
+        }
+        
+        .card h3 {
+            font-size: 28px;
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .card p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.8;
+            text-align: center;
+        }
+        
+        .messenger {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0084ff, #1976d2);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 132, 255, 0.4);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .messenger:hover {
+            transform: scale(1.2) rotate(360deg);
+            box-shadow: 0 20px 50px rgba(0, 132, 255, 0.6);
+        }
+        
+        .price-tag {
+            background: linear-gradient(45deg, #4caf50, #81c784);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 25px;
+            display: inline-block;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 25px;
+            margin-bottom: 50px;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px 30px;
+            border: 3px solid rgba(67, 160, 71, 0.2);
+            border-radius: 50px;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #43a047;
+            box-shadow: 0 0 0 5px rgba(67, 160, 71, 0.15);
+            background: white;
+        }
+        
+        .pdf-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .pdf-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .pdf-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .pdf-item h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(238, 90, 82, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .header { padding: 12px 20px; flex-direction: column; gap: 15px; }
+            .nav { padding: 15px 10px; }
+            .nav-btn { padding: 12px 25px; font-size: 14px; }
+            .hero { padding: 60px 30px; margin-bottom: 40px; }
+            .hero h1 { font-size: 36px; }
+            .grid { grid-template-columns: 1fr; gap: 30px; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .cta-btn { width: 100%; max-width: 350px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .search-input { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="#" class="logo" onclick="showPage('home')">📚 eQro PDF Hub</a>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="showPage('home')" title="হোম">🏠</button>
+            <button class="icon-btn" onclick="showSettings()" title="সেটিংস">⚙️</button>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <button class="nav-btn active" onclick="showPage('home')">🏠 হোম</button>
+        <button class="nav-btn" onclick="showPage('pdf')">📄 PDF</button>
+        <button class="nav-btn" onclick="showPage('shop')">🛒 দোকান</button>
+        <button class="nav-btn" onclick="adminLogin()">🔐 অ্যাডমিন</button>
+    </nav>
+
+    <div class="page-container">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <section class="hero">
+                <h1>🚀 স্বাগতম eQro PDF Hub এ!</h1>
+                <p>বাংলাদেশের সেরা শিক্ষামূলক PDF হাব। চাকরির প্রস্তুতি, ভর্তি পরীক্ষা, একাডেমিক সব PDF এক জায়গায়।</p>
+                <div class="cta-buttons">
+                    <a href="#" class="cta-btn" onclick="showPage('pdf')">PDF ব্রাউজ করুন</a>
+                    <a href="#" class="cta-btn" onclick="showPage('shop')">দোকান দেখুন</a>
+                </div>
+            </section>
+            
+            <div class="grid">
+                <div class="card">
+                    <span class="card-icon">📚</span>
+                    <h3>চাকরির প্রস্তুতি</h3>
+                    <p>BCS, ব্যাংক, সরকারি চাকরির সকল প্রস্তুতি উপকরণ</p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">🎓</span>
+                    <h3>ভর্তি পরীক্ষা</h3>
+                    <p>বিশ্ববিদ্যালয় ভর্তি, মেডিকেল, ইঞ্জিনিয়ারিং</p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">📖</span>
+                    <h3>একাডেমিক বই</h3>
+                    <p>NCTB বই, গাইড বুক, নোটস সংগ্রহ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PDF Page -->
+        <div id="pdf" class="page">
+            <div class="controls">
+                <input type="text" class="search-input" placeholder="PDF খুঁজুন... (চাকরি, ভর্তি, বই)">
+                <button class="cta-btn" style="padding: 20px 40px;">🔍 সার্চ</button>
+            </div>
+            
+            <div class="pdf-list">
+                <div class="pdf-item">
+                    <h4>২০২৬ BCS প্রিলিমিনারি প্রশ্নভাণ্ডার</h4>
+                    <p>সর্বশেষ BCS পরীক্ষার সম্পূর্ণ প্রশ্ন ও সমাধান</p>
+                    <button class="download-btn">📥 ডাউনলোড (PDF)</button>
+                </div>
+                <div class="pdf-item">
+                    <h4>বুয়েট ভর্তি গাইড ২০২৬</h4>
+                    <p>বুয়েট ভর্তি পরীক্ষার প্রস্তুতি উপকরণ</p>
+                    <button class="download-btn">📥 ডাউনলোড (PDF)</button>
+                </div>
+                <div class="pdf-item">
+                    <h4>এইচএসসি ফিজিক্স ১স্ট পেপার</h4>
+                    <p>NCTB অনুগ্রহিত টেক্সটবুক সম্পূর্ণ</p>
+                    <button class="download-btn">📥 ডাউনলোড (PDF)</button>
+                </div>
+                <div class="pdf-item">
+                    <h4>ব্যাংক জব প্রস্তুতি বই</h4>
+                    <p>সব ব্যাংক পরীক্ষার জন্য একটি বই</p>
+                    <button class="download-btn">📥 ডাউনলোড (PDF)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Page -->
+        <div id="shop" class="page">
+            <div class="controls">
+                <input type="text" class="search-input" placeholder="প্রোডাক্ট খুঁজুন...">
+                <button class="cta-btn" style="padding: 20px 40px;">🔍 সার্চ</button>
+            </div>
+            
+            <div class="grid">
+                <div class="card shop-product">
+                    <button class="messenger" onclick="window.open('https://m.me/yourpage')">💬</button>
+                    <span class="card-icon">🎯</span>
+                    <h3>BCS প্রিমিয়াম প্যাকেজ</h3>
+                    <p>৫০০০+ প্রশ্ন, মডেল টেস্ট, ভিডিও ক্লাস</p>
+                    <div class="price-tag">১৯৯৯ টাকা</div>
+                </div>
+                <div class="card shop-product">
+                    <button class="messenger" onclick="window.open('https://m.me/yourpage')">💬</button>
+                    <span class="card-icon">🏥</span>
+                    <h3>মেডিকেল ভর্তি প্যাকেজ</h3>
+                    <p>মেডিকেল ভর্তি সম্পূর্ণ প্রস্তুতি</p>
+                    <div class="price-tag">১২৯৯ টাকা</div>
+                </div>
+                <div class="card shop-product">
+                    <button class="messenger" onclick="window.open('https://m.me/yourpage')">💬</button>
+                    <span class="card-icon">🏗️</span>
+                    <h3>বিশ্ববিদ্যালয় ভর্তি</h3>
+                    <p>সকল GHA ইউনিটের প্রস্তুতি</p>
+                    <div class="price-tag">৯৯৯ টাকা</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="admin" class="page">
+            <div style="text-align: center; padding: 100px;">
+                <h1 style="font-size: 36px; color: #2e7d32;">🔐 অ্যাডমিন প্যানেল</h1>
+                <p style="font-size: 20px; margin-top: 20px;">লগইন করুন নতুন PDF আপলোড করতে</p>
+                <button class="cta-btn" style="margin-top: 30px; padding: 20px 60px;" onclick="alert('অ্যাডমিন লগইন সিস্টেম আসছে শীঘ্রই!')">লগইন করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            // Update active nav button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function showSettings() {
+            alert('সেটিংস:
+📱 থিম চেঞ্জ
+🌙 ডার্ক মোড
+🔔 নোটিফিকেশন
+💾 ডাটা সেভ');
+        }
+
+        function adminLogin() {
+            showPage('admin');
+        }
+
+        // Demo download functionality
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.onclick = function() {
+                alert('PDF ডাউনলোড শুরু হচ্ছে...
+(ডেমো ভার্সন - আসল সাইটে কাজ করবে)');
+            }
+        });
+
+        // Search functionality (demo)
+        document.querySelectorAll('.search-input').forEach(input => {
+            input.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    alert('সার্চ করা হয়েছে: "' + this.value + '"
+ফলাফল দেখানো হচ্ছে...');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
